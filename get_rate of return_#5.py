@@ -11,6 +11,8 @@ from FinanceDataReader import DataReader as fdr
 import pandas as pd
 from datetime import datetime, date
 from dateutil.relativedelta import *
+import math
+
 
 #1. 자료 읽어오기
 # pandas_datareader를 사용하여 시계열 가격 자료 읽어오기(as pbr)
@@ -84,6 +86,25 @@ while dateformat_recent_date <= end_date:
     recent_yr, recent_month, recent_day = dateformat_recent_date.split('-')
     calculated_date = date(int(recent_yr), int(recent_month), int(recent_day)) + relativedelta(months=step)
     dateformat_recent_date = calculated_date.strftime("%Y-%m-%d")
+
+
+
+# 5. 수익률 계산 예제
+    #5-1.기본설정
+initial_money = 1000
+asset_share = {'world_stock':0.3, 'longterm_bond':0.3, 'midterm_bond':0.25, 'commodity':0.075, 'gold':0.075}
+
+    # 5-2.백테스트 결과 저장을 위한 dataframe 생성
+backtest_result = pd.DataFrame(index=benchmark_data.index)
+backtest_result['stock_asset'] = 0
+
+    # 5-3. 백테스트 결과 저장
+for col in benchmark_data.columns:
+    initial_buy = math.trunc(asset_share[col] * initial_money / benchmark_data[col][0])
+    backtest_result['stock_asset'] = backtest_result['stock_asset'] + initial_buy * benchmark_data[col]
+backtest_result['cash_asset'] = initial_money - backtest_result['stock_asset'][0]
+backtest_result['total_asset'] = backtest_result['stock_asset'] + backtest_result['cash_asset']
+backtest_result['daily_return'] = backtest_result['total_asset'].pct_change() * 100
 
 
 
