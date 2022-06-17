@@ -89,7 +89,7 @@ while dateformat_recent_date <= end_date:
 
 
 
-# 5. 수익률 계산 예제
+# 5. 백테스트 결과 계산 예제
     #5-1.기본설정
 initial_money = 1000
 asset_share = {'world_stock':0.3, 'longterm_bond':0.3, 'midterm_bond':0.25, 'commodity':0.075, 'gold':0.075}

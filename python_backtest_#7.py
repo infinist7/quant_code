@@ -129,3 +129,12 @@ for index in range(len(rebalancing_day) - 1):
 
     total_backtest_result = pd.concat([total_backtest_result[:-1], backtest_result])
 
+
+#7. 수익률 계산
+year_period = int(total_backtest_result.index[-1][:4]) - int(total_backtest_result.index[0][:4])
+month_period = (int(total_backtest_result.index[-1][5:7]) - int(total_backtest_result.index[0][5:7])) / 12
+
+final_period = year_period + month_period
+
+CAGR = ((total_backtest_result.iloc[-1]['total_asset'] / total_backtest_result.iloc[0]['total_asset']) ** (
+            1 / final_period) - 1) * 100
