@@ -12,7 +12,7 @@ import pandas as pd
 from datetime import datetime, date
 from dateutil.relativedelta import *
 import math
-
+import matplotlib.pyplot as plt
 
 #1. 자료 읽어오기
 # pandas_datareader를 사용하여 시계열 가격 자료 읽어오기(as pbr)
@@ -138,3 +138,26 @@ final_period = year_period + month_period
 
 CAGR = ((total_backtest_result.iloc[-1]['total_asset'] / total_backtest_result.iloc[0]['total_asset']) ** (
             1 / final_period) - 1) * 100
+
+
+#8. 수익률 그래프 작성 / 연도별 수익률 계산
+#8-1. 수익률 그래프 작성
+total_backtest_result['total_asset'].plot(label='portfolio_total')
+plt.legend()
+plt.show()
+
+
+#8-2. 연도별 수익률 계산
+year_rate = {}
+year_list = [int(j[:4]) for j in total_backtest_result.index]
+first_year, end_year = year_list[0], year_list[-1]
+year_index = []
+for j in range(first_year, end_year+1):
+    year_index.append(year_list.index(j))
+year_index.append(len(year_list)-1)
+
+for index in range(0, len(year_index[:-1])):
+    year_rate[f'{first_year+index}']= round(((total_backtest_result['total_asset'][year_index[index+1]] /
+                                              total_backtest_result['total_asset'][year_index[index]]) - 1) * 100,2)
+
+
