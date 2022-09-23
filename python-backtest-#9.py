@@ -148,20 +148,6 @@ plt.legend()
 plt.show()
 
 
-#8-2. 연도별 수익률 계산
-year_rate = {}
-year_list = [int(j[:4]) for j in total_backtest_result.index]
-first_year, end_year = year_list[0], year_list[-1]
-year_index = []
-for j in range(first_year, end_year+1):
-    year_index.append(year_list.index(j))
-year_index.append(len(year_list)-1)
-
-for index in range(0, len(year_index[:-1])):
-    year_rate[f'{first_year+index}']= round(((total_backtest_result['total_asset'][year_index[index+1]] /
-                                              total_backtest_result['total_asset'][year_index[index]]) - 1) * 100,2)
-
-
 #9. MDD 계산
 #9-1. MDD 계산
 max_value = np.maximum.accumulate(total_backtest_result['total_asset'])

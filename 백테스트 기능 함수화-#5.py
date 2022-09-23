@@ -68,7 +68,15 @@ def do_backtest(initial_money, sub_benchmark_data, asset_share, stock_share):
     return backtest_result
 
 
+def calculate_rate(total_backtest_result):
+    year_period = total_backtest_result.index[-1].year - total_backtest_result.index[0].year
+    month_period = (total_backtest_result.index[-1].month - total_backtest_result.index[0].month) / 12
+    final_period = year_period + month_period
 
+    CAGR = ((total_backtest_result.iloc[-1]['total_asset'] / total_backtest_result.iloc[0]['total_asset']) ** (
+            1 / final_period) - 1) * 100
+
+    return CAGR
 
 
 
@@ -82,6 +90,8 @@ rebalancing_period = find_rebalancing_period(benchmark_data, start_date, end_dat
 
 asset_share = {'VT': 0.3, 'VUSTX': 0.3, 'IEF': 0.25, 'GSG': 0.075, 'GLD': 0.075}
 total_backtest_result = get_backtest_result(rebalancing_period, benchmark_data, asset_share)
+
+cagr = calculate_rate(total_backtest_result)
 
 
 
