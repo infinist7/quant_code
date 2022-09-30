@@ -79,6 +79,26 @@ def calculate_cagr(total_backtest_result):
     return CAGR
 
 
+def calculate_mdd(total_backtest_result):
+    max_value = np.maximum.accumulate(total_backtest_result['total_asset'])
+    rate_value = (total_backtest_result['total_asset'] - max_value) / max_value
+    mdd = rate_value.min()*100
+
+    return mdd
+
+
+def calculate_gr_byyear(total_backtest_result):
+    yr_list = [j.year for j in total_backtest_result.index]
+    first_yr, end_yr = np.min(yr_list), np.max(yr_list)
+    yr_index = [yr_list.index(j) for j in range(first_yr, end_yr + 1)]
+    yr_index.append(len(total_backtest_result)-1)
+    yr_rate = {}
+    for index in range(0, len(yr_index[:-1])):
+        yr_rate[f'{first_yr + index}'] = round(((total_backtest_result['total_asset'][yr_index[index + 1]] /
+                                                 total_backtest_result['total_asset'][yr_index[index]]) - 1) * 100, 2)
+
+    return yr_rate
+
 
 ##실행부분
 backtest_etf = ['VT', 'VUSTX', 'IEF', 'GSG', 'GLD']
@@ -92,3 +112,6 @@ asset_share = {'VT': 0.3, 'VUSTX': 0.3, 'IEF': 0.25, 'GSG': 0.075, 'GLD': 0.075}
 total_backtest_result = get_backtest_result(rebalancing_period, benchmark_data, asset_share)
 
 cagr = calculate_cagr(total_backtest_result)
+mdd = calculate_mdd(total_backtest_result)
+yr_rate = calculate_gr_byyear(total_backtest_result)
+
