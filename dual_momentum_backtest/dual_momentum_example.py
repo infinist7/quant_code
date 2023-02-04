@@ -9,6 +9,9 @@ import pandas as pd
 from dateutil.relativedelta import *
 import math
 import numpy as np
+import yfinance as yf
+import matplotlib.pyplot as plt
+
 
 
 def merge_file(etflist):
@@ -21,9 +24,10 @@ def merge_file(etflist):
     return benchmark_final
 
 
-def load_and_arrange_data(etfname, periods='1/1/1990'):
+def load_and_arrange_data(etfname):
     load_key = etfname.upper()
-    item_df = pdr.get_data_yahoo(load_key, periods)
+    item_df = yf.Ticker(load_key).history(period='max')
+
     if 'Adj Close' in item_df.columns:
         item_df = item_df.rename(columns={'Adj Close': etfname})
     elif 'Adj Close' not in item_df.columns:
@@ -43,12 +47,13 @@ def find_rebalancing_period(data, start_date, end_date, byperiod):
     return rebalancing_day
 
 
-def get_backtest_result(rebalancing_period, benchmark_data, aggressive_asset, defensive_asset, invest_share=1):
+
+def get_backtest_result(rebalancing_period, benchmark_data, aggressive_asset, defensive_asset, invest_share=1, mom_set=6):
     initial_money = 1000
     total_backtest_result = pd.DataFrame()
 
     for index in range(len(rebalancing_period) - 1):
-        find_aggressive_momentum = calculate_momentum(benchmark_data[:rebalancing_period[index]], aggressive_asset, 6)
+        find_aggressive_momentum = calculate_momentum(benchmark_data[:rebalancing_period[index]], aggressive_asset, mom_set)
         find_aggressive_momentum = dict(
             sorted(find_aggressive_momentum.items(), key=lambda item: item[1], reverse=True))
         final_asset = check_condition(find_aggressive_momentum, defensive_asset)
@@ -110,8 +115,8 @@ def calculate_cagr(total_backtest_result):
     month_period = (total_backtest_result.index[-1].month - total_backtest_result.index[0].month) / 12
     final_period = year_period + month_period
 
-    CAGR = ((total_backtest_result.iloc[-1]['total_asset'] / total_backtest_result.iloc[0]['total_asset']) ** (
-            1 / final_period) - 1) * 100
+    CAGR = round(((total_backtest_result.iloc[-1]['total_asset'] / total_backtest_result.iloc[0]['total_asset']) ** (
+            1 / final_period) - 1) * 100,2)
 
     return CAGR
 
@@ -119,10 +124,9 @@ def calculate_cagr(total_backtest_result):
 def calculate_mdd(total_backtest_result):
     max_value = np.maximum.accumulate(total_backtest_result['total_asset'])
     rate_value = (total_backtest_result['total_asset'] - max_value) / max_value
-    mdd = rate_value.min() * 100
+    mdd = round(rate_value.min() * 100, 2)
 
     return mdd
-
 
 
 backtest_etf = ['SPY', 'EFA', 'IEF', 'VFISX']
@@ -130,15 +134,30 @@ aggressive_asset = ['SPY', 'EFA']
 defensive_asset = ['IEF', 'VFISX']
 benchmark_data = merge_file(backtest_etf)
 
-start_date = benchmark_data.index[0] + relativedelta(months=6)
+start_date = benchmark_data.index[0] + relativedelta(months=12)
 end_date = benchmark_data.index[-1]
 
-rebalancing_period = find_rebalancing_period(benchmark_data, start_date, end_date, 3)
+result_dict = {'type': [], 'CAGR': [], 'MDD': []}
 
-total_backtest_result = get_backtest_result(rebalancing_period, benchmark_data, aggressive_asset, defensive_asset)
+rebalancing_set = [1,3,6,12]
+momentum_time_set = [1,3,6,12]
 
-cagr = calculate_cagr(total_backtest_result)
-mdd = calculate_mdd(total_backtest_result)
+for reb_set in rebalancing_set:
+    for mom_set in momentum_time_set:
+        rebalancing_period = find_rebalancing_period(benchmark_data, start_date, end_date, reb_set)
+        total_backtest_result = get_backtest_result(rebalancing_period, benchmark_data, aggressive_asset,
+                                                    defensive_asset, 1, mom_set)
+
+        cagr = calculate_cagr(total_backtest_result)
+        mdd = calculate_mdd(total_backtest_result)
+        result_dict['type'].append(f'R:{reb_set}/M:{mom_set}')
+        result_dict['CAGR'].append(cagr)
+        result_dict['MDD'].append(mdd)
+
+result_df = pd.DataFrame.from_dict(result_dict)
+
+result_df.plot.bar(x='type', y='CAGR', rot=0)
+result_df.plot.bar(x='type', y='MDD', rot=0, color='red')
 
 
 
