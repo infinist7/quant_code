@@ -57,10 +57,13 @@ def match_dart_code(fs_df):
     fs_df['key_var'] = ''
 
     fs_df.loc[fs_df['항목코드'] == 'ifrs_ProfitLoss', 'key_var'] = '당기순이익'
+    fs_df.loc[fs_df['항목코드'] == 'ifrs-full_ProfitLoss', 'key_var'] = '당기순이익'
     fs_df.loc[fs_df['항목코드'] == 'ifrs_Revenue', 'key_var'] = '매출액'
+    fs_df.loc[fs_df['항목코드'] == 'ifrs-full_Revenue', 'key_var'] = '매출액'
     fs_df.loc[fs_df['항목코드'] == 'ifrs_Equity', 'key_var'] = '자본총계'
     fs_df.loc[fs_df['항목코드'] == 'ifrs-full_Equity', 'key_var'] = '자본총계'
     fs_df.loc[fs_df['항목코드'] == 'ifrs_CashFlowsFromUsedInOperatingActivities', 'key_var'] = '영업활동현금흐름'
+    fs_df.loc[fs_df['항목코드'] == 'ifrs-full_CashFlowsFromUsedInOperatingActivities', 'key_var'] = '영업활동현금흐름'
 
     fs_df.loc[(fs_df['항목명'] == '당기순이익') & (fs_df['재무제표종류'].str.contains('손익계산서')), 'key_var'] = '당기순이익'
     fs_df.loc[fs_df['항목명'] == '매출액', 'key_var'] = '매출액'
