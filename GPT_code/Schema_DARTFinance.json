@@ -1,0 +1,122 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "OpenDART Financial Statements API",
+    "version": "1.0.0",
+    "description": "API for accessing single company financial statements from OpenDART."
+  },
+  "servers": [
+    {
+      "url": "https://opendart.fss.or.kr"
+    }
+  ],
+  "paths": {
+    "/api/fnlttSinglAcnt.json": {
+      "get": {
+        "summary": "Retrieve Single Company Financial Statement",
+        "operationId": "getSingleCompanyFinancialStatement",
+        "parameters": [
+          {
+            "name": "crtfc_key",
+            "in": "query",
+            "required": true,
+            "default":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "description": "API authentication key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "corp_code",
+            "in": "query",
+            "required": true,
+            "description": "Corporation code issued by OpenDART",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bsns_year",
+            "in": "query",
+            "required": true,
+            "description": "Business year (4 digits)",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{4}$"
+            }
+          },
+          {
+            "name": "reprt_code",
+            "in": "query",
+            "required": true,
+            "description": "Report code (11013: Annual, 11012: Semi-annual, 11014: Quarterly)",
+            "schema": {
+              "type": "string",
+              "enum": ["11013", "11012", "11014"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialStatementResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FinancialStatementResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "API response status"
+          },
+          "message": {
+            "type": "string",
+            "description": "API response message"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinancialStatementData"
+            }
+          }
+        }
+      },
+      "FinancialStatementData": {
+        "type": "object",
+        "properties": {
+          "account_nm": {
+            "type": "string",
+            "description": "Account name"
+          },
+          "fs_div": {
+            "type": "string",
+            "description": "Financial statement division"
+          },
+          "fs_nm": {
+            "type": "string",
+            "description": "Financial statement name"
+          },
+          "thstrm_nm": {
+            "type": "string",
+            "description": "This term name"
+          },
+          "thstrm_amount": {
+            "type": "string",
+            "description": "This term amount"
+          }
+        }
+      }
+    }
+  }
+}
