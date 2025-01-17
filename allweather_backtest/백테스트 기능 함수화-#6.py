@@ -1,11 +1,12 @@
-from pandas_datareader import data as pdr
-from FinanceDataReader import DataReader as fdr
+import yfinance as yf
 import pandas as pd
 from datetime import datetime, date
 from dateutil.relativedelta import *
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+
+#from FinanceDataReader import DataReader as fdr
 
 
 ##함수 부분
@@ -21,7 +22,8 @@ def merge_file(etflist):
 
 def load_and_arrange_data(etfname, periods='1/1/1990'):
     load_key = etfname.upper()
-    item_df = pdr.get_data_yahoo(load_key, periods)
+    item_df =  yf.Ticker(load_key).history(period='max')
+    loaded_data.index = loaded_data.index.tz_localize(None)
     if 'Adj Close' in item_df.columns:
         item_df = item_df.rename(columns={'Adj Close': etfname})
     elif 'Adj Close' not in item_df.columns:
@@ -82,7 +84,7 @@ def calculate_cagr(total_backtest_result):
 def calculate_mdd(total_backtest_result):
     max_value = np.maximum.accumulate(total_backtest_result['total_asset'])
     rate_value = (total_backtest_result['total_asset'] - max_value) / max_value
-    mdd = rate_value.min()*100
+    mdd = rate_value.min()*100a
 
     return mdd
 
