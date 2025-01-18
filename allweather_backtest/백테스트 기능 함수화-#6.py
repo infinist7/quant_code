@@ -2,8 +2,8 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime, date
 from dateutil.relativedelta import *
-import math
 import matplotlib.pyplot as plt
+import math
 import numpy as np
 
 #from FinanceDataReader import DataReader as fdr
@@ -20,14 +20,9 @@ def merge_file(etflist):
     return benchmark_final
 
 
-def load_and_arrange_data(etfname, periods='1/1/1990'):
-    load_key = etfname.upper()
-    item_df =  yf.Ticker(load_key).history(period='max')
-    loaded_data.index = loaded_data.index.tz_localize(None)
-    if 'Adj Close' in item_df.columns:
-        item_df = item_df.rename(columns={'Adj Close': etfname})
-    elif 'Adj Close' not in item_df.columns:
-        item_df = item_df.rename(columns={'Close': etfname})
+def load_and_arrange_data(etfname):
+    item_df =  yf.Ticker(etfname).history(period='max')
+    item_df = item_df.rename(columns={'Close': etfname})
     item_df = item_df[[etfname]]
     item_df = item_df[~item_df.index.duplicated(keep='first')]
 
@@ -84,7 +79,7 @@ def calculate_cagr(total_backtest_result):
 def calculate_mdd(total_backtest_result):
     max_value = np.maximum.accumulate(total_backtest_result['total_asset'])
     rate_value = (total_backtest_result['total_asset'] - max_value) / max_value
-    mdd = rate_value.min()*100a
+    mdd = rate_value.min()*100
 
     return mdd
 
@@ -117,4 +112,80 @@ cagr = calculate_cagr(total_backtest_result)
 mdd = calculate_mdd(total_backtest_result)
 yr_rate = calculate_gr_byyear(total_backtest_result)
 
+total_backtest_result['total_asset'].plot()
+plt.show()
 
+
+
+
+## 2번 코드 예제
+etfname = 'vustx'
+item_df = yf.Ticker(etfname).history(period='max')
+item_df = item_df.rename(columns={'Close': etfname})
+item_df = item_df[[etfname]]
+item_df = item_df[~item_df.index.duplicated(keep='first')]
+
+etfname = 'vustx'
+item_df_vustx = yf.Ticker(etfname).history(period='max')
+item_df_vustx = item_df_vustx.rename(columns={'Close': etfname})
+item_df_vustx = item_df_vustx[[etfname]]
+item_df_vustx = item_df_vustx[~item_df_vustx.index.duplicated(keep='first')]
+
+
+
+### 2번 코드 함수화
+def load_and_arrange_data(etfname):
+    item_df =  yf.Ticker(etfname).history(period='max')
+    item_df = item_df.rename(columns={'Close': etfname})
+    item_df = item_df[[etfname]]
+    item_df = item_df[~item_df.index.duplicated(keep='first')]
+
+    return item_df
+
+item_df = load_and_arrange_data('vt')
+item_df_vustx = load_and_arrange_data('vustx')
+
+
+### 3번 코드 예제
+benchmark_df = pd.DataFrame()
+benchmark_df = pd.merge(benchmark_df, item_df, left_index=True, right_index=True, how='outer')
+benchmark_df = pd.merge(benchmark_df, item_df_vustx, left_index=True, right_index=True, how='outer')
+
+
+
+### 3번 코드 함수화
+def merge_file(etflist):
+    benchmark_df = pd.DataFrame()
+    for number in range(0, len(etflist)):
+        each_etf_df = load_and_arrange_data(etflist[number])
+        benchmark_df = pd.merge(benchmark_df, each_etf_df, left_index=True, right_index=True, how='outer')
+
+    benchmark_final = benchmark_df.dropna()
+    return benchmark_final
+
+backtest_etf = ['VT', 'VUSTX', 'IEF', 'GSG', 'GLD']
+benchmark_data = merge_file(backtest_etf)
+
+
+#### 3번코드 포함 후 최종 결과물
+
+def load_and_arrange_data(etfname):
+    item_df =  yf.Ticker(etfname).history(period='max')
+    item_df = item_df.rename(columns={'Close': etfname})
+    item_df = item_df[[etfname]]
+    item_df = item_df[~item_df.index.duplicated(keep='first')]
+
+    return item_df
+
+
+def merge_file(etflist):
+    benchmark_df = pd.DataFrame()
+    for number in range(0, len(etflist)):
+        each_etf_df = load_and_arrange_data(etflist[number])
+        benchmark_df = pd.merge(benchmark_df, each_etf_df, left_index=True, right_index=True, how='outer')
+
+    benchmark_final = benchmark_df.dropna()
+    return benchmark_final
+
+backtest_etf = ['VT', 'VUSTX', 'IEF', 'GSG', 'GLD']
+benchmark_data = merge_file(backtest_etf)
